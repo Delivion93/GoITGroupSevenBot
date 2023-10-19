@@ -1,0 +1,39 @@
+.idea
+*.iml
+*.ipr
+*.env
+target
+out/
+.DS_STORE /src/main/resources/log
+.DS_STORE /src/main/resources/*.env
+.DS_STORE /src/main/resources/.archetype-resources
+.DS_STORE /src/main/resources/.maven
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
