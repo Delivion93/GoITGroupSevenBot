@@ -1,5 +1,4 @@
-package com.goitgroupsevenbot.entity;
-
+package com.goitgroupsevenbot.entity.dto;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,12 +14,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@JsonTypeName("MonobankCurrencyItem")
-public class MonobankCurrencyItem {
-    private int currencyCodeA;
-    private int currencyCodeB;
-    private long date;
-    private double rateBuy;
-    private double rateCross;
-    private double rateSell;
+@JsonTypeName("PrivatCurrencyItem")
+public class PrivatCurrencyItemDto {
+    private String ccy;
+    private String base_ccy;
+    private double buy;
+    private double sale;
 }
