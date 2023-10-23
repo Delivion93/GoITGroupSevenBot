@@ -53,7 +53,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         String action = param[0];
         System.out.println("action = " + action);
         if (action.equals("START")) {
-            if(param[1].equals("settings")){
+            if (param[1].equals("settings")) {
                 settingsCommandReceived(message.getChatId());
             } else if (param[1].equals("info")) {
                 infoCommandReceived(message.getChatId());
@@ -168,22 +168,21 @@ public class TelegramBot extends TelegramLongPollingBot {
                         infoCommandReceived(message.getChatId());
                         break;
                     case "/settings":
-                            settingsCommandReceived(message.getChatId());
+                        settingsCommandReceived(message.getChatId());
                         break;
                     case "/symbols":
-                            symbolsCommandReceived(message.getChatId());
+                        symbolsCommandReceived(message.getChatId());
                         break;
                     case "/banks":
-                            banksCommandReceived(message.getChatId());
+                        banksCommandReceived(message.getChatId());
                         break;
                     case "/currency":
-                            currencyCommandReceived(message.getChatId());
+                        currencyCommandReceived(message.getChatId());
                         break;
                 }
             }
         }
     }
-
 
     /**
      * Method for responding to the /banks command.
@@ -298,7 +297,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private void startCommandReceived(Message message) {
         registerUser(message);
-        String answer = "This bot displays exchange rates, " + "to take advantage of all the features please register " + "by clicking the \"Register\" button";
+        String answer = "This bot displays exchange rates";
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> buttons = new ArrayList<>();
         buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
@@ -307,6 +306,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
         sendMessageWithInlineKeyboard(message.getChatId(), answer, markup);
     }
+
     /**
      * Method for responding to the /start command.
      *
