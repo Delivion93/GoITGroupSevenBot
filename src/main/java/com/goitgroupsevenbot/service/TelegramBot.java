@@ -28,7 +28,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot() {
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("start", "Start bot."));
-        listOfCommands.add(new BotCommand("register", "Register user."));
+        listOfCommands.add(new BotCommand("info", "Information about this bot."));
         listOfCommands.add(new BotCommand("settings", "Sett up all settings."));
         listOfCommands.add(new BotCommand("symbols", "Number of symbols after comma."));
         listOfCommands.add(new BotCommand("banks", "Choose a bank."));
@@ -52,27 +52,14 @@ public class TelegramBot extends TelegramLongPollingBot {
         String[] param = callbackQuery.getData().split(":");
         String action = param[0];
         System.out.println("action = " + action);
-        if (action.equals("REGISTRATION")) {
-            if (isUserRegistered(message)) {
-                nextButtonPressed(message.getChatId(), message.getMessageId(), "registration");
-            } else {
-                registerCommandReceived(message.getChatId());
-            }
-        } else if (action.equals("REGISTER")) {
-            if (isUserRegistered(message)) {
-                sendMessage(message.getChatId(), "You have been registered.");
-            } else {
-                if (param[1].equals("yes")) {
-                    registerUser(message);
-                    nextButtonPressed(message.getChatId(), message.getMessageId(), "registration");
-                } else if (param[1].equals("no")) {
-                    answerToUnregisteredUser(message.getChatId());
-                }
+        if (action.equals("START")) {
+            if(param[1].equals("settings")){
+                settingsCommandReceived(message.getChatId());
+            } else if (param[1].equals("info")) {
+                infoCommandReceived(message.getChatId());
             }
         } else if (action.equals("NEXT")) {
-            if (param[1].equals("registration")) {
-                settingsCommandReceived(message.getChatId());
-            } else if (param[1].equals("symbol")) {
+            if (param[1].equals("symbol")) {
                 banksCommandReceived(message.getChatId());
             } else if (param[1].equals("settings")) {
                 symbolsCommandReceived(message.getChatId());
@@ -155,9 +142,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             for (Currency currency : Currency.values()) {
                 rows.add(Arrays.asList(
                         InlineKeyboardButton.builder()
-                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyOriginal(), currency))
-                                .callbackData("CURRENCY_ORIGINAL:" + currency.name()).build(),
-                        InlineKeyboardButton.builder()
                                 .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
                                 .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
             }
@@ -178,59 +162,28 @@ public class TelegramBot extends TelegramLongPollingBot {
                 //Response on command if it exists.
                 switch (command) {
                     case "/start":
-                        startCommandReceived(message.getChatId());
+                        startCommandReceived(message);
                         break;
-                    case "/register":
-                        registerCommandReceived(message.getChatId());
+                    case "/info":
+                        infoCommandReceived(message.getChatId());
                         break;
                     case "/settings":
-                        if (!isUserRegistered(message)) {
-                            answerToUnregisteredUser(message.getChatId());
-                        } else {
                             settingsCommandReceived(message.getChatId());
-                        }
                         break;
                     case "/symbols":
-                        if (!isUserRegistered(message)) {
-                            answerToUnregisteredUser(message.getChatId());
-                        } else {
                             symbolsCommandReceived(message.getChatId());
-                        }
                         break;
                     case "/banks":
-                        if (!isUserRegistered(message)) {
-                            answerToUnregisteredUser(message.getChatId());
-                        } else {
                             banksCommandReceived(message.getChatId());
-                        }
                         break;
                     case "/currency":
-                        if (!isUserRegistered(message)) {
-                            answerToUnregisteredUser(message.getChatId());
-                        } else {
                             currencyCommandReceived(message.getChatId());
-                        }
                         break;
                 }
             }
         }
     }
 
-    /**
-     * Method for responding to the registered user when he finishes the registration.
-     *
-     * @param chatId Chat's ID long.
-     */
-    private void nextButtonPressed(Long chatId, int messageId, String whereItWasPressed) {
-        String answer = "You have been registered.";
-        System.out.println(answer);
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Next").callbackData("NEXT:" + whereItWasPressed).build());
-        rows.add(buttons);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendEditMessageWithInlineKeyboard(chatId, messageId, answer, markup);
-    }
 
     /**
      * Method for responding to the /banks command.
@@ -242,9 +195,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         for (Currency currency : Currency.values()) {
             rows.add(Arrays.asList(
-                    InlineKeyboardButton.builder()
-                            .text(getCurrencyButton(UserList.userList.get(chatId).getCurrencyOriginal(), currency))
-                            .callbackData("CURRENCY_ORIGINAL:" + currency.name()).build(),
                     InlineKeyboardButton.builder()
                             .text(getCurrencyButton(UserList.userList.get(chatId).getCurrencyTarget(), currency))
                             .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
@@ -281,7 +231,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      *
      * @param chatId Chat's ID long.
      */
-    private void symbolsCommandReceived(Long chatId) {
+    private void symbolsCommandReceived(long chatId) {
         String answer = "Please choose the number of symbols after comma:";
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
@@ -302,7 +252,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      *
      * @param chatId Chat's ID long.
      */
-    private void settingsCommandReceived(Long chatId) {
+    private void settingsCommandReceived(long chatId) {
         String answer = "Please choose the options:";
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
@@ -321,49 +271,18 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Method for responding to the /register command.
-     *
-     * @param chatId Chat's ID long.
-     */
-    private void registerCommandReceived(Long chatId) {
-        String answer = "Do you really want to register?";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Yes").callbackData("REGISTER:yes").build());
-        buttons.add(InlineKeyboardButton.builder().text("No").callbackData("REGISTER:no").build());
-        rows.add(buttons);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
-    }
-
-    /**
-     * Method for responding to the unregistered user.
-     *
-     * @param chatId Chat's ID long.
-     */
-    private void answerToUnregisteredUser(Long chatId) {
-        String answer = "You are not registered yet, please register by clicking on the " + "\"Register\" button to continue working.";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Register").callbackData("REGISTER:yes").build());
-        rows.add(buttons);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
-    }
-
-    /**
      * Util method to register a new user.
      *
      * @param message Message form user.
      */
     private void registerUser(Message message) {
-        if (!isUserRegistered(message)) {
+        if (!isUserRegistered(message.getChatId())) {
             Long chatId = message.getChatId();
             Chat chat = message.getChat();
             User user = User.builder().chatId(chatId).firstName(chat.getFirstName()).lastName(chat.getLastName()).userName(chat.getUserName())
                     .symbols(NumberOfSymbolsAfterComma.TWO)
                     .bank(Banks.NABU)
-                    .currencyOriginal(Currency.UAH)
+//                    .currencyOriginal(Currency.UAH)
                     .currencyTarget(Currency.USD)
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
@@ -375,13 +294,32 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Method for responding to the /start command.
      *
-     * @param chatId Chat's ID long.
+     * @param message Message fom user.
      */
-    private void startCommandReceived(long chatId) {
+    private void startCommandReceived(Message message) {
+        registerUser(message);
         String answer = "This bot displays exchange rates, " + "to take advantage of all the features please register " + "by clicking the \"Register\" button";
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Register").callbackData("REGISTRATION:register").build());
+        buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
+        buttons.add(InlineKeyboardButton.builder().text("Info").callbackData("START:info").build());
+        rows.add(buttons);
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+        sendMessageWithInlineKeyboard(message.getChatId(), answer, markup);
+    }
+    /**
+     * Method for responding to the /start command.
+     *
+     * @param chatId Chat's ID long.
+     */
+    private void infoCommandReceived(long chatId) {
+        String answer = "This bot displays exchange rates.\n " + "You can specify the number of symbols after comma, " +
+                "select the bank from which you want to receive information, " +
+                "select the currency, and also select the time to receive notifications, " +
+                "by clicking on the \"Settings\" button:";
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
         rows.add(buttons);
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
         sendMessageWithInlineKeyboard(chatId, answer, markup);
@@ -445,10 +383,10 @@ public class TelegramBot extends TelegramLongPollingBot {
     /**
      * Util method to check if user registered.
      *
-     * @param message Message from user.
+     * @param chatId Chat id.
      */
-    private boolean isUserRegistered(Message message) {
-        return UserList.userList.containsKey(message.getChatId());
+    private boolean isUserRegistered(long chatId) {
+        return UserList.userList.containsKey(chatId);
     }
 
     /**
