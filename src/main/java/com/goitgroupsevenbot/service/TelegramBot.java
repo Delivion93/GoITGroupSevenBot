@@ -18,10 +18,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class TelegramBot extends TelegramLongPollingBot {
     @SneakyThrows
@@ -116,39 +113,37 @@ public class TelegramBot extends TelegramLongPollingBot {
             rows.add(buttonsRowTwo);
             InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
             sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-        } else if (action.equals("CURRENCY_ORIGINAL")) {
-            Currency currencyOriginal = Currency.valueOf(param[1]);
-            UserList.userList.get(message.getChatId()).setCurrencyOriginal(currencyOriginal);
-            String answer = "Please choose the currency:";
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            for (Currency currency : Currency.values()) {
-                rows.add(Arrays.asList(
-                        InlineKeyboardButton.builder()
-                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyOriginal(), currency))
-                                .callbackData("CURRENCY_ORIGINAL:" + currency.name()).build(),
-                        InlineKeyboardButton.builder()
-                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
-                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-            }
-            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
-                    InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-        } else if (action.equals("CURRENCY_TARGET")) {
+        }else if (action.equals("CURRENCY_TARGET")) {
             Currency currencyTarget = Currency.valueOf(param[1]);
-            UserList.userList.get(message.getChatId()).setCurrencyTarget(currencyTarget);
-            String answer = "Please choose the currency:";
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            for (Currency currency : Currency.values()) {
-                rows.add(Arrays.asList(
-                        InlineKeyboardButton.builder()
-                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
-                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
+            if(UserList.userList.get(message.getChatId()).getCurrencyTarget().containsKey(currencyTarget)){
+                UserList.userList.get(message.getChatId()).getCurrencyTarget().remove(currencyTarget);
+                String answer = "Please choose the currency:";
+                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+                for (Currency currency : Currency.values()) {
+                    rows.add(Arrays.asList(
+                            InlineKeyboardButton.builder()
+                                    .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
+                                    .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
+                }
+                rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
+                        InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
+                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+                sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+            } else {
+                UserList.userList.get(message.getChatId()).getCurrencyTarget().put(currencyTarget, currencyTarget);
+                String answer = "Please choose the currency:";
+                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+                for (Currency currency : Currency.values()) {
+                    rows.add(Arrays.asList(
+                            InlineKeyboardButton.builder()
+                                    .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
+                                    .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
+                }
+                rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
+                        InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
+                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+                sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
             }
-            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
-                    InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
         }
     }
 
@@ -281,8 +276,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             User user = User.builder().chatId(chatId).firstName(chat.getFirstName()).lastName(chat.getLastName()).userName(chat.getUserName())
                     .symbols(NumberOfSymbolsAfterComma.TWO)
                     .bank(Banks.NABU)
-//                    .currencyOriginal(Currency.UAH)
-                    .currencyTarget(Currency.USD)
+                   .currencyTarget(new HashMap<>())
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
             UserList.userList.put(chatId, user);
@@ -407,8 +401,9 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param saved   Chat's ID long.
      * @param current Text to send.
      */
-    private String getCurrencyButton(Currency saved, Currency current) {
-        return saved == current ? current.name() + "\uD83D\uDDF8" : current.name();
+    private String getCurrencyButton(Map<Currency, Currency> saved, Currency current) {
+
+        return saved.containsKey(current)  ? current.name() + "\uD83D\uDDF8" : current.name();
     }
 
     /**
