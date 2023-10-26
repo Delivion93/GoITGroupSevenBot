@@ -17,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.util.*;
 
 public class TelegramBot extends TelegramLongPollingBot {
@@ -62,11 +63,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 symbolsCommandReceived(message.getChatId());
             } else if (param[1].equals("banks")) {
                 currencyCommandReceived(message.getChatId());
-            }else if (param[1].equals("currency")) {
+            } else if (param[1].equals("currency")) {
                 notificationCommandReceived(message.getChatId());
-            }else if (param[1].equals("notification")) {
-            //TODO: Add method which send to user answer with currency rate.
-                sendMessage(message.getChatId(),"Hear should be answer with currency rate!!!");
+            } else if (param[1].equals("notification")) {
+                //TODO: Add method which send to user answer with currency rate.
+                sendMessage(message.getChatId(), "Hear should be answer with currency rate!!!");
             }
 
         } else if (action.equals("BACK")) {
@@ -76,7 +77,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 symbolsCommandReceived(message.getChatId());
             } else if (param[1].equals("currency")) {
                 banksCommandReceived(message.getChatId());
-            }else if (param[1].equals("notification")) {
+            } else if (param[1].equals("notification")) {
                 currencyCommandReceived(message.getChatId());
             }
         } else if (action.equals("SETTINGS")) {
@@ -152,7 +153,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
                 sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
             }
-        }else if (action.equals("NOTIFICATION")) {
+        } else if (action.equals("NOTIFICATION")) {
             NotificationTime notification = NotificationTime.valueOf(param[1]);
             UserList.userList.get(message.getChatId()).setNotificationTime(notification);
             String answer = "Please select notification time:";
@@ -162,17 +163,17 @@ public class TelegramBot extends TelegramLongPollingBot {
             List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
             List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
             List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
-            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
-            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(),NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
+            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
+            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
+            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
+            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
+            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
+            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
+            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
+            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
+            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
+            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
+            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
             buttonsRowFive.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:notification").build());
             buttonsRowFive.add(InlineKeyboardButton.builder().text("Get rate").callbackData("NEXT:notification").build());
             rows.add(buttonsRowOne);
@@ -219,6 +220,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         }
     }
+
     /**
      * Method for responding to the /notification command.
      *
@@ -232,17 +234,17 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
-            buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
-            buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
-            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
-            buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(),NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
+        buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
+        buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(chatId).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
         buttonsRowFive.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:notification").build());
         buttonsRowFive.add(InlineKeyboardButton.builder().text("Get rate").callbackData("NEXT:notification").build());
         rows.add(buttonsRowOne);
@@ -520,5 +522,13 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         return BotConstance.BOT_TOKEN;
+    }
+
+    public void sendNotification() {
+        int currentHour = LocalTime.now().getHour();
+
+        UserList.userList.values().stream()
+                .filter(it -> it.getNotificationTime().getTime() == 12)
+                .forEach(it -> sendMessage(it.getChatId(), "message")); // TODO: Change method sendMessage() to getInfo()
     }
 }
