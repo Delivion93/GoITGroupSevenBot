@@ -3,6 +3,8 @@ package com.goitgroupsevenbot.entity;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Object that holds all user's info.
@@ -23,7 +25,7 @@ public class User {
     private Timestamp registeredAt;
     private NumberOfSymbolsAfterComma symbols;
     private Banks bank;
-    private Currency currencyOriginal;
-    private Currency currencyTarget;
+    private Map<Currency ,Currency> currencyTarget;
+    private NotificationTime notificationTime;
     //TODO: Add fields to store user choose (Number of decimal, Bank, Currency, Newsletter).
 }

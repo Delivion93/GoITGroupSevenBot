@@ -6,7 +6,6 @@ import lombok.ToString;
 
 @Getter
 @RequiredArgsConstructor
-@ToString
 public enum NumberOfSymbolsAfterComma {
     TWO(2,"TWO"),
     THREE(3,"THREE"),
