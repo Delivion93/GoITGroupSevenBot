@@ -26,5 +26,6 @@ public class User {
     private NumberOfSymbolsAfterComma symbols;
     private Banks bank;
     private Map<Currency ,Currency> currencyTarget;
+    private NotificationTime notificationTime;
     //TODO: Add fields to store user choose (Number of decimal, Bank, Currency, Newsletter).
 }
