@@ -4,6 +4,7 @@ import com.goitgroupsevenbot.config.BotConstance;
 import com.goitgroupsevenbot.entity.*;
 import com.goitgroupsevenbot.entity.Currency;
 import com.goitgroupsevenbot.entity.User;
+import com.goitgroupsevenbot.repository.CurrencyBankRepositoryDomain;
 import com.goitgroupsevenbot.repository.UserList;
 import lombok.SneakyThrows;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -64,9 +65,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "settings" -> symbolsCommandReceived(message.getChatId());
                     case "banks" -> currencyCommandReceived(message.getChatId());
                     case "currency" -> notificationCommandReceived(message.getChatId());
-                    case "notification" ->
-                        //TODO: Add method which send to user answer with currency rate.
-                            sendMessage(message.getChatId(), "Hear should be answer with currency rate!!!");
+                    case "notification" ->getInfo(message.getChatId());
                 }
             }
             case "BACK" -> {
@@ -338,8 +337,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             User user = User.builder().chatId(chatId).firstName(chat.getFirstName()).lastName(chat.getLastName()).userName(chat.getUserName())
                     .symbols(NumberOfSymbolsAfterComma.TWO)
                     .bank(Banks.NABU)
-                    .currencyTarget(new HashMap<>())
-                    .notificationTime(NotificationTime.TURN_OF_NOTIFICATION)
+                    .currencyTarget(new HashMap<>(Map.of(Currency.USD,Currency.USD)))
+                    .notificationTime(NotificationTime.NINE)
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
             UserList.userList.put(chatId, user);
@@ -370,6 +369,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void infoCommandReceived(long chatId) {
+        getInfo(chatId);
         String answer = "This bot displays exchange rates.\n " + "You can specify the number of symbols after comma, " +
                 "select the bank from which you want to receive information, " +
                 "select the currency, and also select the time to receive notifications, " +
@@ -514,6 +514,28 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         UserList.userList.values().stream()
                 .filter(it -> it.getNotificationTime().getTime() == currentHour)
-                .forEach(it -> sendMessage(it.getChatId(), "message")); // TODO: Change method sendMessage() to getInfo()
+                .forEach(it -> getInfo(it.getChatId()));
+    }
+
+    public void getInfo(Long chatId) {
+        User user = UserList.userList.get(chatId);
+        StringBuilder sb = new StringBuilder();
+        List<CurrencyBankItemDomain> listBanks = CurrencyBankRepositoryDomain.listDomainBanks.stream()
+                .filter(it -> it.getBanks().equals(user.getBank())).filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
+                .toList();
+        for (CurrencyBankItemDomain listBank : listBanks) {
+            sb.append("Курс ")
+                    .append(listBank.getBanks().getSignature())
+                    .append(" UAH/")
+                    .append(listBank.getCurrency().getText())
+                    .append("\nКупівля: ")
+                    .append(listBank.getRateBuy())
+                    .append("\nПродаж: ")
+                    .append(listBank.getRateSell())
+                    .append("\n");
+        }
+        sendMessage(chatId,sb.toString());
+
+
     }
 }
