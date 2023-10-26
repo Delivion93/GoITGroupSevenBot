@@ -6,7 +6,7 @@ import org.quartz.*;
 public class NewsletterJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
-        SchedulerContext schedulerContext = null;
+        SchedulerContext schedulerContext;
         try {
             schedulerContext = jobExecutionContext.getScheduler().getContext();
         } catch (SchedulerException e) {

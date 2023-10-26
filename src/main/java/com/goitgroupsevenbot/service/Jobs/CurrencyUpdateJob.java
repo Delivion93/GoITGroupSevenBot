@@ -6,7 +6,7 @@ import org.quartz.*;
 
 public class CurrencyUpdateJob implements Job {
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void execute(JobExecutionContext jobExecutionContext){
 
         CurrencyBankRepositoryDto.setCurrencyList();
         CurrencyBankRepositoryDomain.setCurrencyListDomainBanks();
