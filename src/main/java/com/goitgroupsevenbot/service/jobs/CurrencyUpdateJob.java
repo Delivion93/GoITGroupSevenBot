@@ -1,4 +1,4 @@
-package com.goitgroupsevenbot.service.Jobs;
+package com.goitgroupsevenbot.service.jobs;
 
 import com.goitgroupsevenbot.repository.CurrencyBankRepositoryDomain;
 import com.goitgroupsevenbot.repository.CurrencyBankRepositoryDto;

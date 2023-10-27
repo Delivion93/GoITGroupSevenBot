@@ -56,7 +56,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 if (param[1].equals("settings")) {
                     settingsCommandReceived(message.getChatId());
                 } else if (param[1].equals("info")) {
-                    infoCommandReceived(message.getChatId());
+                    getInfo(message.getChatId());
                 }
             }
             case "NEXT" -> {
@@ -194,7 +194,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 //Response on command if it exists.
                 switch (command) {
                     case "/start" -> startCommandReceived(message);
-                    case "/info" -> infoCommandReceived(message.getChatId());
+                    case "/info" -> getInfo(message.getChatId());
                     case "/settings" -> settingsCommandReceived(message.getChatId());
                     case "/symbols" -> symbolsCommandReceived(message.getChatId());
                     case "/banks" -> banksCommandReceived(message.getChatId());
@@ -368,19 +368,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      *
      * @param chatId Chat's ID long.
      */
-    private void infoCommandReceived(long chatId) {
-        getInfo(chatId);
-        String answer = "This bot displays exchange rates.\n " + "You can specify the number of symbols after comma, " +
-                "select the bank from which you want to receive information, " +
-                "select the currency, and also select the time to receive notifications, " +
-                "by clicking on the \"Settings\" button:";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
-        rows.add(buttons);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
-    }
+
 
     /**
      * Util method to send edit message with inline keyboard.
@@ -512,30 +500,38 @@ public class TelegramBot extends TelegramLongPollingBot {
     public void sendNotification() {
         int currentHour = LocalTime.now().getHour();
 
+
         UserList.userList.values().stream()
                 .filter(it -> it.getNotificationTime().getTime() == currentHour)
                 .forEach(it -> getInfo(it.getChatId()));
     }
 
+
     public void getInfo(Long chatId) {
         User user = UserList.userList.get(chatId);
         StringBuilder sb = new StringBuilder();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttons = new ArrayList<>();
+        buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
+        buttons.add(InlineKeyboardButton.builder().text("Get rate").callbackData("NEXT:notification").build());
+        rows.add(buttons);
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+
         List<CurrencyBankItemDomain> listBanks = CurrencyBankRepositoryDomain.listDomainBanks.stream()
-                .filter(it -> it.getBanks().equals(user.getBank())).filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
+                .filter(it -> it.getBanks().equals(user.getBank()))
+                .filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
                 .toList();
         for (CurrencyBankItemDomain listBank : listBanks) {
             sb.append("Курс ")
-                    .append(listBank.getBanks().getSignature())
+                    .append(listBank.getBanks().getName())
                     .append(" UAH/")
                     .append(listBank.getCurrency().getText())
                     .append("\nКупівля: ")
-                    .append(listBank.getRateBuy())
+                    .append(String.format(user.getSymbols().getExpression(),listBank.getRateBuy()))
                     .append("\nПродаж: ")
-                    .append(listBank.getRateSell())
+                    .append(String.format(user.getSymbols().getExpression(),listBank.getRateSell()))
                     .append("\n");
         }
-        sendMessage(chatId,sb.toString());
-
-
+        sendMessageWithInlineKeyboard(user.getChatId(),sb.toString(),markup);
     }
 }

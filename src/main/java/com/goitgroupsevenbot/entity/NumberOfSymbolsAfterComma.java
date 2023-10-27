@@ -2,14 +2,14 @@ package com.goitgroupsevenbot.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 @Getter
 @RequiredArgsConstructor
 public enum NumberOfSymbolsAfterComma {
-    TWO(2,"TWO"),
-    THREE(3,"THREE"),
-    FOUR(4,"FOUR");
+    TWO(2,"TWO","%.2f"),
+    THREE(3,"THREE","%.3f"),
+    FOUR(4,"FOUR","%.4f");
     private final int number;
     private final String signature;
+    private final String expression;
 }

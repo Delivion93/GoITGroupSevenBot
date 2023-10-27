@@ -1,7 +1,7 @@
 package com.goitgroupsevenbot.config;
 
-import com.goitgroupsevenbot.service.Jobs.CurrencyUpdateJob;
-import com.goitgroupsevenbot.service.Jobs.NewsletterJob;
+import com.goitgroupsevenbot.service.jobs.CurrencyUpdateJob;
+import com.goitgroupsevenbot.service.jobs.NewsletterJob;
 import com.goitgroupsevenbot.service.TelegramBot;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
