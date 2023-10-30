@@ -7,6 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Unified class for DTO objects.
+ *
+ * @author Shalaiev Ivan
+ * @version 1.0.0 30.10.2023
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
