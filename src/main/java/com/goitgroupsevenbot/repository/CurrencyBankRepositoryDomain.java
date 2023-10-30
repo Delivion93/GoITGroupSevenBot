@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class CurrencyBankRepositoryDomain {
     public static CopyOnWriteArrayList<CurrencyBankItemDomain> listDomainBanks;
 
-    public static CopyOnWriteArrayList<CurrencyBankItemDomain> setCurrencyListDomainBanks(){
+    public static void setCurrencyListDomainBanks(){
         List<CurrencyBankItemDomain> listPrivatBank = CurrencyBankRepositoryDto.currencyListPrivat.stream()
                 .filter(it -> it.getCcy().equals(Currency.EUR.getText()) ||
                         it.getCcy().equals(Currency.USD.getText()))
@@ -43,7 +43,6 @@ public class CurrencyBankRepositoryDomain {
         listDomainBanks.addAll(listPrivatBank);
         listDomainBanks.addAll(listNabu);
         listDomainBanks.addAll(listMonobank);
-        return listDomainBanks;
     }
 
     public static void main(String[] args) {

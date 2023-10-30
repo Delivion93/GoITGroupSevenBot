@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Banks {
-    MOMOBANK("Monobank","MOMOBANK"), PRIVAT_BANK("Privat bank","PRIVAT_BANK"), NABU("NABU","NABU");
+    MOMOBANK("Монобанк","MOMOBANK"), PRIVAT_BANK("ПриватБанк","PRIVAT_BANK"), NABU("НАБУ","NABU");
     private final String name;
     private final String signature;
 }
