@@ -53,10 +53,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         System.out.println("action = " + action);
         switch (action) {
             case "START" -> {
-                if (param[1].equals("settings")) {
-                    settingsCommandReceived(message.getChatId());
-                } else if (param[1].equals("info")) {
-                    getInfo(message.getChatId());
+                switch (param[1]) {
+                    case "settings" -> settingsCommandReceived(message.getChatId());
+                    case "info" -> getInfo(message.getChatId());
                 }
             }
             case "NEXT" -> {
@@ -65,7 +64,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "settings" -> symbolsCommandReceived(message.getChatId());
                     case "banks" -> currencyCommandReceived(message.getChatId());
                     case "currency" -> notificationCommandReceived(message.getChatId());
-                    case "notification" ->getInfo(message.getChatId());
+                    case "notification" -> getInfo(message.getChatId());
                 }
             }
             case "BACK" -> {
@@ -84,103 +83,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "notification" -> notificationCommandReceived(message.getChatId());
                 }
             }
-            case "SYMBOL" -> {
-                NumberOfSymbolsAfterComma symbol = NumberOfSymbolsAfterComma.valueOf(param[1]);
-                UserList.userList.get(message.getChatId()).setSymbols(symbol);
-                String answer = "Please choose the number of symbols after comma:";
-                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-                for (NumberOfSymbolsAfterComma symbols : NumberOfSymbolsAfterComma.values()) {
-                    buttonsRowOne.add(InlineKeyboardButton.builder().text(getSymbolButton(UserList.userList.get(message.getChatId()).getSymbols(), symbols)).callbackData("SYMBOL:" + symbols.getSignature()).build());
-                }
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:symbol").build());
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text("Next").callbackData("NEXT:symbol").build());
-                rows.add(buttonsRowOne);
-                rows.add(buttonsRowTwo);
-                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-                sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-            }
-            case "BANKS" -> {
-                Banks bank = Banks.valueOf(param[1]);
-                UserList.userList.get(message.getChatId()).setBank(bank);
-                String answer = "Please choose the bank:";
-                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-                for (Banks banks : Banks.values()) {
-                    buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getBank(), banks)).callbackData("BANKS:" + banks.getSignature()).build());
-                }
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:banks").build());
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text("Next").callbackData("NEXT:banks").build());
-                rows.add(buttonsRowOne);
-                rows.add(buttonsRowTwo);
-                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-                sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-            }
-            case "CURRENCY_TARGET" -> {
-                Currency currencyTarget = Currency.valueOf(param[1]);
-                if (UserList.userList.get(message.getChatId()).getCurrencyTarget().containsKey(currencyTarget)) {
-                    UserList.userList.get(message.getChatId()).getCurrencyTarget().remove(currencyTarget);
-                    String answer = "Please choose the currency:";
-                    List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-                    for (Currency currency : Currency.values()) {
-                        rows.add(Collections.singletonList(
-                                InlineKeyboardButton.builder()
-                                        .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
-                                        .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-                    }
-                    rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
-                            InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
-                    InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-                    sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-                } else {
-                    UserList.userList.get(message.getChatId()).getCurrencyTarget().put(currencyTarget, currencyTarget);
-                    String answer = "Please choose the currency:";
-                    List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-                    for (Currency currency : Currency.values()) {
-                        rows.add(Collections.singletonList(
-                                InlineKeyboardButton.builder()
-                                        .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
-                                        .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-                    }
-                    rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
-                            InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
-                    InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-                    sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-                }
-            }
-            case "NOTIFICATION" -> {
-                NotificationTime notification = NotificationTime.valueOf(param[1]);
-                UserList.userList.get(message.getChatId()).setNotificationTime(notification);
-                String answer = "Please select notification time:";
-                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
-                List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
-                buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
-                buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
-                buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
-                buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
-                buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
-                buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
-                buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
-                buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
-                buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
-                buttonsRowFive.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:notification").build());
-                buttonsRowFive.add(InlineKeyboardButton.builder().text("Get rate").callbackData("NEXT:notification").build());
-                rows.add(buttonsRowOne);
-                rows.add(buttonsRowTwo);
-                rows.add(buttonsRowThree);
-                rows.add(buttonsRowFour);
-                rows.add(buttonsRowFive);
-                InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-                sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
-            }
+            case "SYMBOL" -> symbolCallBackReceived(param[1], message);
+            case "BANKS" -> banksCallBackReceived(param[1], message);
+            case "CURRENCY_TARGET" -> currencyCallBackReceived(param[1], message);
+            case "NOTIFICATION" -> notificationCallBackReceived(param[1], message);
         }
     }
 
@@ -203,6 +109,130 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             }
         }
+    }
+
+    /**
+     * Method for responding to the SYMBOL call back.
+     *
+     * @param param   Call back data.
+     * @param message Message from user.
+     */
+    private void symbolCallBackReceived(String param, Message message) {
+        NumberOfSymbolsAfterComma symbol = NumberOfSymbolsAfterComma.valueOf(param);
+        UserList.userList.get(message.getChatId()).setSymbols(symbol);
+        String answer = "Please choose the number of symbols after comma:";
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
+        for (NumberOfSymbolsAfterComma symbols : NumberOfSymbolsAfterComma.values()) {
+            buttonsRowOne.add(InlineKeyboardButton.builder().text(getSymbolButton(UserList.userList.get(message.getChatId()).getSymbols(), symbols)).callbackData("SYMBOL:" + symbols.getSignature()).build());
+        }
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:symbol").build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Next").callbackData("NEXT:symbol").build());
+        rows.add(buttonsRowOne);
+        rows.add(buttonsRowTwo);
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+    }
+
+    /**
+     * Method for responding to the BANKS call back.
+     *
+     * @param param   Call back data.
+     * @param message Message from user.
+     */
+    private void banksCallBackReceived(String param, Message message) {
+        Banks bank = Banks.valueOf(param);
+        UserList.userList.get(message.getChatId()).setBank(bank);
+        String answer = "Please choose the bank:";
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
+        for (Banks banks : Banks.values()) {
+            buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getBank(), banks)).callbackData("BANKS:" + banks.getSignature()).build());
+        }
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:banks").build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Next").callbackData("NEXT:banks").build());
+        rows.add(buttonsRowOne);
+        rows.add(buttonsRowTwo);
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+    }
+
+    /**
+     * Method for responding to the CURRENCY call back.
+     *
+     * @param param   Call back data.
+     * @param message Message from user.
+     */
+    private void currencyCallBackReceived(String param, Message message) {
+        Currency currencyTarget = Currency.valueOf(param);
+        if (UserList.userList.get(message.getChatId()).getCurrencyTarget().containsKey(currencyTarget)) {
+            UserList.userList.get(message.getChatId()).getCurrencyTarget().remove(currencyTarget);
+            String answer = "Please choose the currency:";
+            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+            for (Currency currency : Currency.values()) {
+                rows.add(Collections.singletonList(
+                        InlineKeyboardButton.builder()
+                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
+                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
+            }
+            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
+                    InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
+            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+        } else {
+            UserList.userList.get(message.getChatId()).getCurrencyTarget().put(currencyTarget, currencyTarget);
+            String answer = "Please choose the currency:";
+            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+            for (Currency currency : Currency.values()) {
+                rows.add(Collections.singletonList(
+                        InlineKeyboardButton.builder()
+                                .text(getCurrencyButton(UserList.userList.get(message.getChatId()).getCurrencyTarget(), currency))
+                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
+            }
+            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Back").callbackData("BACK:currency").build(),
+                    InlineKeyboardButton.builder().text("Next").callbackData("NEXT:currency").build()));
+            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+        }
+    }
+    /**
+     * Method for responding to the SYMBOL call back.
+     *
+     * @param param   Call back data.
+     * @param message Message from user.
+     */
+    private void notificationCallBackReceived(String param, Message message) {
+        NotificationTime notification = NotificationTime.valueOf(param);
+        UserList.userList.get(message.getChatId()).setNotificationTime(notification);
+        String answer = "Please select notification time:";
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
+        buttonsRowOne.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
+        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
+        buttonsRowThree.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
+        buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
+        buttonsRowFour.add(InlineKeyboardButton.builder().text(getBankButton(UserList.userList.get(message.getChatId()).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
+        buttonsRowFive.add(InlineKeyboardButton.builder().text("Back").callbackData("BACK:notification").build());
+        buttonsRowFive.add(InlineKeyboardButton.builder().text("Get rate").callbackData("NEXT:notification").build());
+        rows.add(buttonsRowOne);
+        rows.add(buttonsRowTwo);
+        rows.add(buttonsRowThree);
+        rows.add(buttonsRowFour);
+        rows.add(buttonsRowFive);
+        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
     }
 
     /**
@@ -337,7 +367,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             User user = User.builder().chatId(chatId).firstName(chat.getFirstName()).lastName(chat.getLastName()).userName(chat.getUserName())
                     .symbols(NumberOfSymbolsAfterComma.TWO)
                     .bank(Banks.NABU)
-                    .currencyTarget(new HashMap<>(Map.of(Currency.USD,Currency.USD)))
+                    .currencyTarget(new HashMap<>(Map.of(Currency.USD, Currency.USD)))
                     .notificationTime(NotificationTime.NINE)
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
@@ -362,13 +392,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
         sendMessageWithInlineKeyboard(message.getChatId(), answer, markup);
     }
-
-    /**
-     * Method for responding to the /start command.
-     *
-     * @param chatId Chat's ID long.
-     */
-
 
     /**
      * Util method to send edit message with inline keyboard.
@@ -453,7 +476,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param current Text to send.
      */
     private String getBankButton(NotificationTime saved, NotificationTime current) {
-        return saved == current ? current.getText() + "\uD83D\uDDF8" : current.getText();
+        return saved == current ? current.getText() + "\uD83D\uDFE2" : current.getText();
     }
 
     /**
@@ -464,7 +487,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private String getCurrencyButton(Map<Currency, Currency> saved, Currency current) {
 
-        return saved.containsKey(current) ? current.name() + "\uD83D\uDDF8" : current.name();
+        return saved.containsKey(current) ? current.name() + "\uD83D\uDFE2" : current.name();
     }
 
     /**
@@ -474,7 +497,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param current Text to send.
      */
     private String getBankButton(Banks saved, Banks current) {
-        return saved == current ? current.getName() + "\uD83D\uDDF8" : current.getName();
+        return saved == current ? current.getName() + "\uD83D\uDFE2" : current.getName();
     }
 
     /**
@@ -484,7 +507,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param current Text to send.
      */
     private String getSymbolButton(NumberOfSymbolsAfterComma saved, NumberOfSymbolsAfterComma current) {
-        return saved == current ? current.getNumber() + "\uD83D\uDDF8" : String.valueOf(current.getNumber());
+        return saved == current ? current.getNumber() + "\uD83D\uDFE2" : String.valueOf(current.getNumber());
     }
 
     @Override
@@ -527,11 +550,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                     .append(" UAH/")
                     .append(listBank.getCurrency().getText())
                     .append("\nКупівля: ")
-                    .append(String.format(user.getSymbols().getExpression(),listBank.getRateBuy()))
+                    .append(String.format(user.getSymbols().getExpression(), listBank.getRateBuy()))
                     .append("\nПродаж: ")
-                    .append(String.format(user.getSymbols().getExpression(),listBank.getRateSell()))
+                    .append(String.format(user.getSymbols().getExpression(), listBank.getRateSell()))
                     .append("\n");
         }
-        sendMessageWithInlineKeyboard(user.getChatId(),sb.toString(),markup);
+        sendMessageWithInlineKeyboard(user.getChatId(), sb.toString(), markup);
     }
 }
