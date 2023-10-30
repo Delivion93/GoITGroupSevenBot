@@ -38,7 +38,7 @@ public class BotInitializer {
                     .newTrigger()
                     .withIdentity("everyHourFrom9to18")
                     .withSchedule(
-                            CronScheduleBuilder.cronSchedule("0 0 9-17 * * ?"))
+                            CronScheduleBuilder.cronSchedule("0 0 9-18 * * ?"))
                     .build();
 
 

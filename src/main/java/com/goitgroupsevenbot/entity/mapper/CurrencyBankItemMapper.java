@@ -1,63 +1,58 @@
-package com.goitgroupsevenbot.repository;
+package com.goitgroupsevenbot.entity.mapper;
 
-import com.goitgroupsevenbot.entity.Banks;
-import com.goitgroupsevenbot.entity.Currency;
-import com.goitgroupsevenbot.entity.CurrencyBankItemDomain;
+import com.goitgroupsevenbot.entity.enums.Banks;
+import com.goitgroupsevenbot.entity.enums.Currency;
+import com.goitgroupsevenbot.entity.domain.CurrencyBankItem;
+import com.goitgroupsevenbot.entity.dto.MonobankCurrencyItemDto;
+import com.goitgroupsevenbot.entity.dto.NabuCurrencyItemDto;
+import com.goitgroupsevenbot.entity.dto.PrivatCurrencyItemDto;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-public class CurrencyBankRepositoryDomain {
-    public static CopyOnWriteArrayList<CurrencyBankItemDomain> listDomainBanks;
+public class CurrencyBankItemMapper {
 
-    public static void setCurrencyListDomainBanks(){
-        List<CurrencyBankItemDomain> listPrivatBank = CurrencyBankRepositoryDto.currencyListPrivat.stream()
-                .filter(it -> it.getCcy().equals(Currency.EUR.getText()) ||
-                        it.getCcy().equals(Currency.USD.getText()))
-                .map(it -> CurrencyBankItemDomain.builder()
-                        .banks(Banks.PRIVAT_BANK)
+    public List<CurrencyBankItem> privatDtoToDomain(List<PrivatCurrencyItemDto> currencyItemDtos) {
+        return currencyItemDtos.stream()
+                                .filter(it -> it.getCcy().equals(Currency.EUR.getText())
+                                        || it.getCcy().equals(Currency.USD.getText()))
+                                .map(it -> CurrencyBankItem.builder()
+                                        .banks(Banks.PRIVAT_BANK)
                         .currency(Currency.valueOf(it.getCcy()))
                         .rateBuy(it.getBuy())
                         .rateSell(it.getSale())
                         .build())
                 .toList();
-        List<CurrencyBankItemDomain> listNabu = CurrencyBankRepositoryDto.currencyListNabu.stream()
+    }
+    public List<CurrencyBankItem> nabuDtoToDomain(List<NabuCurrencyItemDto> currencyItemDtos){
+        return currencyItemDtos.stream()
                 .filter(it -> it.getCc().equals(Currency.USD.getText()) || it.getCc().equals(Currency.EUR.getText()))
-                .map(it -> CurrencyBankItemDomain.builder()
+                .map(it -> CurrencyBankItem.builder()
                         .banks(Banks.NABU)
                         .currency(Currency.valueOf(it.getCc()))
                         .rateBuy(getCurrencyRateBuy(it.getRate()))
                         .rateSell(getCurrencyRateSell(it.getRate()))
                         .build())
                 .toList();
-        List<CurrencyBankItemDomain> listMonobank = CurrencyBankRepositoryDto.currencyListMonobank.stream()
+    }
+    public List<CurrencyBankItem> monobankDtoToDomain(List<MonobankCurrencyItemDto>currencyItemDtos){
+        return currencyItemDtos.stream()
                 .filter(it -> it.getCurrencyCodeB() == 980 &&(it.getCurrencyCodeA() == 840 || it.getCurrencyCodeA() == 978))
-                .map(it -> CurrencyBankItemDomain.builder()
+                .map(it -> CurrencyBankItem.builder()
                         .banks(Banks.MOMOBANK)
                         .currency(getCurrency(it.getCurrencyCodeA()))
                         .rateBuy(it.getRateBuy())
                         .rateSell(it.getRateSell())
                         .build())
                 .toList();
-        listDomainBanks = new CopyOnWriteArrayList<>();
-        listDomainBanks.addAll(listPrivatBank);
-        listDomainBanks.addAll(listNabu);
-        listDomainBanks.addAll(listMonobank);
     }
 
-    public static void main(String[] args) {
-        CurrencyBankRepositoryDto.setCurrencyList();
-        CurrencyBankRepositoryDomain.setCurrencyListDomainBanks();
-        listDomainBanks.forEach(System.out::println);
-
-    }
     /**
      * Util method to return enum Currency based on currency id.
      *
      * @param currencyCode Currency code based on ISO table.
      * @return Currency enum.
      */
-    public static Currency getCurrency(int currencyCode){
+    private static Currency getCurrency(int currencyCode){
         if (currencyCode == 840){
             return Currency.USD;
         }
@@ -69,7 +64,7 @@ public class CurrencyBankRepositoryDomain {
      * @param currencyRate Currency rate cross.
      * @return double rate buy.
      */
-    public static double getCurrencyRateBuy(double currencyRate){
+    private double getCurrencyRateBuy(double currencyRate){
 
         return currencyRate - (0.989/100)*currencyRate;
     }
@@ -79,7 +74,7 @@ public class CurrencyBankRepositoryDomain {
      * @param currencyRate Currency rate cross.
      * @return double rate sell.
      */
-    public static double getCurrencyRateSell(double currencyRate){
+    private double getCurrencyRateSell(double currencyRate){
 
         return currencyRate + (0.989/100)*currencyRate;
     }
