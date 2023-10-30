@@ -1,4 +1,4 @@
-package com.goitgroupsevenbot.entity;
+package com.goitgroupsevenbot.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
