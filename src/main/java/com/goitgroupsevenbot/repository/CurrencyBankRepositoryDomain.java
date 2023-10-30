@@ -58,7 +58,7 @@ public class CurrencyBankRepositoryDomain {
      * @param currencyCode Currency code based on ISO table.
      * @return Currency enum.
      */
-    public static Currency getCurrency(int currencyCode){
+    private static Currency getCurrency(int currencyCode){
         if (currencyCode == 840){
             return Currency.USD;
         }
@@ -70,7 +70,7 @@ public class CurrencyBankRepositoryDomain {
      * @param currencyRate Currency rate cross.
      * @return double rate buy.
      */
-    public static double getCurrencyRateBuy(double currencyRate){
+    private static double getCurrencyRateBuy(double currencyRate){
 
         return currencyRate - (0.989/100)*currencyRate;
     }
@@ -80,7 +80,7 @@ public class CurrencyBankRepositoryDomain {
      * @param currencyRate Currency rate cross.
      * @return double rate sell.
      */
-    public static double getCurrencyRateSell(double currencyRate){
+    private static double getCurrencyRateSell(double currencyRate){
 
         return currencyRate + (0.989/100)*currencyRate;
     }

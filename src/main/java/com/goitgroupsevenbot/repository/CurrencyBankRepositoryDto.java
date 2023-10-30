@@ -10,6 +10,7 @@ import com.goitgroupsevenbot.service.CurrencyService;
 import com.goitgroupsevenbot.service.impl.MonobankCurrencyService;
 import com.goitgroupsevenbot.service.impl.NabuCurrencyService;
 import com.goitgroupsevenbot.service.impl.PrivatBankCurrencyService;
+import lombok.Data;
 import lombok.Getter;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Shalaiev Ivan
  * @version 1.0.0 23.10.2023
  */
-@Getter
+@Data
 public class CurrencyBankRepositoryDto {
     public static CopyOnWriteArrayList<MonobankCurrencyItemDto> currencyListMonobank;
     public static CopyOnWriteArrayList<NabuCurrencyItemDto> currencyListNabu;
@@ -43,5 +44,17 @@ public class CurrencyBankRepositoryDto {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static CopyOnWriteArrayList<MonobankCurrencyItemDto> getCurrencyListMonobank() {
+        return currencyListMonobank;
+    }
+
+    public static CopyOnWriteArrayList<NabuCurrencyItemDto> getCurrencyListNabu() {
+        return currencyListNabu;
+    }
+
+    public static CopyOnWriteArrayList<PrivatCurrencyItemDto> getCurrencyListPrivat() {
+        return currencyListPrivat;
     }
 }
