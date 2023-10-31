@@ -20,16 +20,18 @@ import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScope
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalTime;
 import java.util.*;
 
 public class TelegramBot extends TelegramLongPollingBot {
     private UserRepository userRepository;
+    private UtilMethods util;
+
     @SneakyThrows
     public TelegramBot() {
         userRepository = new UserRepository();
+        util = new UtilMethods(userRepository);
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("start", "Головне меню"));
         listOfCommands.add(new BotCommand("info", "Отримати інформацію про курс валют"));
@@ -126,19 +128,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void symbolCallBackReceived(String param, Message message) {
         NumberOfSymbolsAfterComma symbol = NumberOfSymbolsAfterComma.valueOf(param);
         userRepository.getById(message.getChatId()).setSymbols(symbol);
-        String answer = "Оберіть кількість знаків після коми";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        for (NumberOfSymbolsAfterComma symbols : NumberOfSymbolsAfterComma.values()) {
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getSymbols(), symbols)).callbackData("SYMBOL:" + symbols.getSignature()).build());
-        }
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:symbol").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:symbol").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+        String answer = "Оберіть кількість знаків після коми:";
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.symbolsButtons(message.getChatId()));
     }
 
     /**
@@ -150,19 +141,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void banksCallBackReceived(String param, Message message) {
         Banks bank = Banks.valueOf(param);
         userRepository.getById(message.getChatId()).setBank(bank);
-        String answer = "Оберіть банк для запиту курсу валют";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        for (Banks banks : Banks.values()) {
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getBank(), banks)).callbackData("BANKS:" + banks.getSignature()).build());
-        }
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:banks").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:banks").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+        String answer = "Оберіть банк для запиту курсу валют:";
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.banksButtons(message.getChatId()));
     }
 
     /**
@@ -175,32 +155,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         Currency currencyTarget = Currency.valueOf(param);
         if (userRepository.getById(message.getChatId()).getCurrencyTarget().containsKey(currencyTarget)) {
             userRepository.getById(message.getChatId()).getCurrencyTarget().remove(currencyTarget);
-            String answer = "Оберіть валюти";
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            for (Currency currency : Currency.values()) {
-                rows.add(Collections.singletonList(
-                        InlineKeyboardButton.builder()
-                                .text(getButton(userRepository.getById(message.getChatId()).getCurrencyTarget(), currency))
-                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-            }
-            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:currency").build(),
-                    InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:currency").build()));
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+            String answer = "Оберіть валюти:";
+            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.currencyButtons(message.getChatId()));
         } else {
             userRepository.getById(message.getChatId()).getCurrencyTarget().put(currencyTarget, currencyTarget);
-            String answer = "Оберіть валюти";
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            for (Currency currency : Currency.values()) {
-                rows.add(Collections.singletonList(
-                        InlineKeyboardButton.builder()
-                                .text(getButton(userRepository.getById(message.getChatId()).getCurrencyTarget(), currency))
-                                .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-            }
-            rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:currency").build(),
-                    InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:currency").build()));
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+            String answer = "Оберіть валюти:";
+            sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.currencyButtons(message.getChatId()));
         }
     }
 
@@ -213,33 +173,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void notificationCallBackReceived(String param, Message message) {
         NotificationTime notification = NotificationTime.valueOf(param);
         userRepository.getById(message.getChatId()).setNotificationTime(notification);
-        String answer = "Оберіть час оповіщення";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
-        buttonsRowFour.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
-        buttonsRowFour.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(message.getChatId()).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
-        buttonsRowFive.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:notification").build());
-        buttonsRowFive.add(InlineKeyboardButton.builder().text("Отримати курс").callbackData("NEXT:notification").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        rows.add(buttonsRowThree);
-        rows.add(buttonsRowFour);
-        rows.add(buttonsRowFive);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, markup);
+        String answer = "Оберіть час оповіщення:";
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.notificationButtons(message.getChatId()));
     }
 
     /**
@@ -248,33 +183,8 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void notificationCommandReceived(Long chatId) {
-        String answer = "Оберіть час оповіщення";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
-        buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.TWELVE)).callbackData("NOTIFICATION:" + NotificationTime.TWELVE.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.THIRTEEN)).callbackData("NOTIFICATION:" + NotificationTime.THIRTEEN.getSignature()).build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.FOURTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FOURTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.FIFTEEN)).callbackData("NOTIFICATION:" + NotificationTime.FIFTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.SIXTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SIXTEEN.getSignature()).build());
-        buttonsRowThree.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.SEVENTEEN)).callbackData("NOTIFICATION:" + NotificationTime.SEVENTEEN.getSignature()).build());
-        buttonsRowFour.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.EIGHTEEN)).callbackData("NOTIFICATION:" + NotificationTime.EIGHTEEN.getSignature()).build());
-        buttonsRowFour.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
-        buttonsRowFive.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:notification").build());
-        buttonsRowFive.add(InlineKeyboardButton.builder().text("Отримати курс").callbackData("NEXT:notification").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        rows.add(buttonsRowThree);
-        rows.add(buttonsRowFour);
-        rows.add(buttonsRowFive);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
+        String answer = "Оберіть час оповіщення:";
+        sendMessageWithInlineKeyboard(chatId, answer, util.notificationButtons(chatId));
     }
 
     /**
@@ -283,18 +193,9 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void currencyCommandReceived(Long chatId) {
-        String answer = "Оберіть валюти";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        for (Currency currency : Currency.values()) {
-            rows.add(Collections.singletonList(
-                    InlineKeyboardButton.builder()
-                            .text(getButton(userRepository.getById(chatId).getCurrencyTarget(), currency))
-                            .callbackData("CURRENCY_TARGET:" + currency.name()).build()));
-        }
-        rows.add(Arrays.asList(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:currency").build(),
-                InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:currency").build()));
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
+        String answer = "Оберіть валюти:";
+
+        sendMessageWithInlineKeyboard(chatId, answer, util.currencyButtons(chatId));
     }
 
     /**
@@ -303,19 +204,8 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void banksCommandReceived(Long chatId) {
-        String answer = "Оберіть банк для запиту курсу валют";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        for (Banks banks : Banks.values()) {
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getBank(), banks)).callbackData("BANKS:" + banks.getSignature()).build());
-        }
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:banks").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:banks").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
+        String answer = "Оберіть банк для запиту курсу валют:";
+        sendMessageWithInlineKeyboard(chatId, answer, util.banksButtons(chatId));
     }
 
     /**
@@ -324,19 +214,8 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void symbolsCommandReceived(long chatId) {
-        String answer = "Оберіть кількість знаків після коми";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        for (NumberOfSymbolsAfterComma symbols : NumberOfSymbolsAfterComma.values()) {
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getSymbols(), symbols)).callbackData("SYMBOL:" + symbols.getSignature()).build());
-        }
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:symbol").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:symbol").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
+        String answer = "Оберіть кількість знаків після коми:";
+        sendMessageWithInlineKeyboard(chatId, answer, util.symbolsButtons(chatId));
     }
 
     /**
@@ -345,21 +224,8 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param chatId Chat's ID long.
      */
     private void settingsCommandReceived(long chatId) {
-        String answer = "Оберіть налаштування";
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
-        List<InlineKeyboardButton> buttonsRowTree = new ArrayList<>();
-        buttonsRowOne.add(InlineKeyboardButton.builder().text("Кількість символів після коми").callbackData("SETTINGS:symbols").build());
-        buttonsRowOne.add(InlineKeyboardButton.builder().text("Банк").callbackData("SETTINGS:bank").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Валюти").callbackData("SETTINGS:currency").build());
-        buttonsRowTwo.add(InlineKeyboardButton.builder().text("Час оповіщення").callbackData("SETTINGS:notification").build());
-        buttonsRowTree.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:settings").build());
-        rows.add(buttonsRowOne);
-        rows.add(buttonsRowTwo);
-        rows.add(buttonsRowTree);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(chatId, answer, markup);
+        String answer = "Оберіть налаштування:";
+        sendMessageWithInlineKeyboard(chatId, answer, util.settingsButtons());
     }
 
     /**
@@ -378,7 +244,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     .notificationTime(NotificationTime.NINE)
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
-            userRepository.addUser(message.getChatId(),user);
+            userRepository.addUser(message.getChatId(), user);
             System.out.println("userRepository.getAll() = " + userRepository.getAll());
         }
     }
@@ -391,19 +257,12 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void startCommandReceived(Message message) {
         registerUser(message);
         User user = userRepository.getById(message.getChatId());
-
-        String answer ="Цей бот відображає курси валют\nНалаштування :\nБанк -"
-                +user.getBank().getName()
-                +"\nВалюта :"+user.currencyToString()
-                +"\nКількість знаків після коми :"+user.getSymbols().getNumber()
-                +"\nЧас оповіщення :"+user.getNotificationTime().getText();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> buttons = new ArrayList<>();
-        buttons.add(InlineKeyboardButton.builder().text("Settings").callbackData("START:settings").build());
-        buttons.add(InlineKeyboardButton.builder().text("Info").callbackData("START:info").build());
-        rows.add(buttons);
-        InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-        sendMessageWithInlineKeyboard(message.getChatId(), answer, markup);
+        String answer = "Цей бот відображає курси валют\nНалаштування :\nБанк - "
+                + user.getBank().getName()
+                + "\nВалюта : " + user.currencyToString()
+                + "\nКількість знаків після коми : " + user.getSymbols().getNumber()
+                + "\nЧас оповіщення : " + user.getNotificationTime().getText();
+        sendMessageWithInlineKeyboard(message.getChatId(), answer, util.startButtons());
     }
 
     /**
@@ -460,7 +319,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         execute(message);
     }
 
-
     /**
      * Util method to check if user registered.
      *
@@ -482,49 +340,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         executeMessage(message);
     }
 
-    /**
-     * Util method to mark up a pressed button in the "notification" keyboard.
-     *
-     * @param saved   Chat's ID long.
-     * @param current Text to send.
-     */
-    private String getButton(NotificationTime saved, NotificationTime current) {
-        return saved == current ? current.getText() + "\uD83D\uDFE2" : current.getText();
-    }
-
-    /**
-     * Util method to mark up a pressed button in the "currency" keyboard.
-     *
-     * @param saved   Chat's ID long.
-     * @param current Text to send.
-     */
-    private String getButton(Map<Currency, Currency> saved, Currency current) {
-
-        return saved.containsKey(current) ? current.name() + "\uD83D\uDFE2" : current.name();
-    }
-
-    /**
-     * Util method to mark up a pressed button in the "banks" keyboard.
-     *
-     * @param saved   Chat's ID long.
-     * @param current Text to send.
-     */
-    private String getButton(Banks saved, Banks current) {
-        return saved == current ? current.getName() + "\uD83D\uDFE2" : current.getName();
-    }
-
-    /**
-     * Util method to mark up a pressed button in the "number of symbols after comma" keyboard.
-     *
-     * @param saved   Chat's ID long.
-     * @param current Text to send.
-     */
-    private String getButton(NumberOfSymbolsAfterComma saved, NumberOfSymbolsAfterComma current) {
-        return saved == current ? current.getNumber() + "\uD83D\uDFE2" : String.valueOf(current.getNumber());
-    }
 
     public void sendNotification() {
-        int currentHour = LocalTime.now().getHour()+BotConstance.UKRAINE_TIME_DIFFERENCE; //TODO: Часові зони
+        int currentHour = LocalTime.now().getHour() + BotConstance.UKRAINE_TIME_DIFFERENCE; //TODO: Часові зони
         userRepository.getAll().values().stream()
                 .filter(it -> it.getNotificationTime().getTime() == currentHour)
                 .forEach(it -> getInfo(it.getChatId()));
@@ -532,23 +350,11 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void getInfo(Long chatId) {
         User user = userRepository.getById(chatId);
-        if(user.getCurrencyTarget().size()==0){
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            List<InlineKeyboardButton> buttons = new ArrayList<>();
-            buttons.add(InlineKeyboardButton.builder().text("Валюта").callbackData("NEXT:banks").build());
-            rows.add(buttons);
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-            sendMessageWithInlineKeyboard(user.getChatId(), "У вас не обрано жодної валюти. Оберіть валюту", markup);
-        }
-        else{
+        if (user.getCurrencyTarget().size() == 0) {
+            String answer = "У вас не обрано жодної валюти. Оберіть валюту";
+            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoEmptyCurrencyButtons());
+        } else {
             StringBuilder sb = new StringBuilder();
-            List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-            List<InlineKeyboardButton> buttons = new ArrayList<>();
-            buttons.add(InlineKeyboardButton.builder().text("Налаштування").callbackData("START:settings").build());
-            buttons.add(InlineKeyboardButton.builder().text("Отримати курс").callbackData("NEXT:notification").build());
-            rows.add(buttons);
-            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().keyboard(rows).build();
-
             List<CurrencyBankItem> listBanks = CurrencyBankRepository.getList().stream()
                     .filter(it -> it.getBanks().equals(user.getBank()))
                     .filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
@@ -556,7 +362,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             for (CurrencyBankItem listBank : listBanks) {
                 sb.append("Курс ")
                         .append(listBank.getBanks().getName())
-                        .append(" UAH/")
+                        .append(" UAH/ ")
                         .append(listBank.getCurrency().getText())
                         .append("\nКупівля: ")
                         .append(String.format(user.getSymbols().getExpression(), listBank.getRateBuy()))
@@ -564,7 +370,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                         .append(String.format(user.getSymbols().getExpression(), listBank.getRateSell()))
                         .append("\n");
             }
-            sendMessageWithInlineKeyboard(user.getChatId(), sb.toString(), markup);
+            String answer = "\nКількість знаків після коми : " + user.getSymbols().getNumber()
+                    + "\nЧас оповіщення : " + user.getNotificationTime().getText()
+                    +"\n"+sb;
+            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoButtons());
         }
     }
 

@@ -12,11 +12,6 @@ public class UserRepository {
         return true;
     }
 
-    public boolean updateUser(Long chatId, User user) {
-        userList.put(chatId, user);
-        return true;
-    }
-
     public User getById(Long chatId) {
         return userList.get(chatId);
     }

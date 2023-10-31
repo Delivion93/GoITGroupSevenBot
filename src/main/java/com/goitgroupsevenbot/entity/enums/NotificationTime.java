@@ -16,7 +16,7 @@ public enum NotificationTime {
     SIXTEEN(16,"16:00","SIXTEEN"),
     SEVENTEEN(17,"17:00","SEVENTEEN"),
     EIGHTEEN(18,"18:00","EIGHTEEN"),
-    TURN_OF_NOTIFICATION(0,"Turn of notifications","TURN_OF_NOTIFICATION");
+    TURN_OF_NOTIFICATION(0,"Вимкнути оповіщення","TURN_OF_NOTIFICATION");
     private final int time;
     private final String text;
     private final String signature;
