@@ -30,5 +30,12 @@ public class User {
     private Banks bank;
     private Map<Currency,Currency> currencyTarget;
     private NotificationTime notificationTime;
-    //TODO: Add fields to store user choose (Number of decimal, Bank, Currency, Newsletter).
+
+    public String currencyToString(){
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Currency, Currency> currencyCurrencyEntry : currencyTarget.entrySet()) {
+            sb.append(currencyCurrencyEntry.getValue().getText()).append(" ");
+        }
+        return sb.toString();
+    }
 }

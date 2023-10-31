@@ -11,4 +11,5 @@ public class BotConstance {
     public static final String URL_PRIVAT = "https://api.privatbank.ua/p24api/pubinfo?exchange&coursid=5";
     public static final String CONTENT_TYPE = "content-type";
     public static final String APPLICATION_JSON_CHARSET_UTF_8 = "application/json; charset=utf-8";
+    public static final int UKRAINE_TIME_DIFFERENCE=1;
 }
