@@ -1,9 +1,6 @@
 package com.goitgroupsevenbot.entity.domain;
 
-import com.goitgroupsevenbot.entity.enums.Banks;
-import com.goitgroupsevenbot.entity.enums.Currency;
-import com.goitgroupsevenbot.entity.enums.NotificationTime;
-import com.goitgroupsevenbot.entity.enums.NumberOfSymbolsAfterComma;
+import com.goitgroupsevenbot.entity.enums.*;
 import lombok.*;
 
 import java.sql.Timestamp;
@@ -30,6 +27,8 @@ public class User {
     private Banks bank;
     private Map<Currency,Currency> currencyTarget;
     private NotificationTime notificationTime;
+    private TimeZones timeZone;
+    private int currentTime;
 
     public String currencyToString(){
         StringBuilder sb = new StringBuilder();

@@ -1,15 +1,14 @@
 package com.goitgroupsevenbot.service;
 
 import com.goitgroupsevenbot.config.BotConstance;
-import com.goitgroupsevenbot.entity.enums.Currency;
+import com.goitgroupsevenbot.entity.enums.*;
 import com.goitgroupsevenbot.entity.domain.User;
 import com.goitgroupsevenbot.entity.domain.CurrencyBankItem;
-import com.goitgroupsevenbot.entity.enums.Banks;
-import com.goitgroupsevenbot.entity.enums.NotificationTime;
-import com.goitgroupsevenbot.entity.enums.NumberOfSymbolsAfterComma;
+import com.goitgroupsevenbot.entity.enums.Currency;
 import com.goitgroupsevenbot.repository.CurrencyBankRepository;
 import com.goitgroupsevenbot.repository.UserRepository;
 import lombok.SneakyThrows;
+import org.joda.time.DateTime;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,10 +17,9 @@ import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
 
 import java.sql.Timestamp;
-import java.time.LocalTime;
 import java.util.*;
 
 public class TelegramBot extends TelegramLongPollingBot {
@@ -241,6 +239,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     .symbols(NumberOfSymbolsAfterComma.TWO)
                     .bank(Banks.NABU)
                     .currencyTarget(new HashMap<>(Map.of(Currency.USD, Currency.USD)))
+                    .timeZone(TimeZones.KYIV)
                     .notificationTime(NotificationTime.NINE)
                     .registeredAt(new Timestamp(System.currentTimeMillis()))
                     .build();
@@ -257,10 +256,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void startCommandReceived(Message message) {
         registerUser(message);
         User user = userRepository.getById(message.getChatId());
-        String answer = "Цей бот відображає курси валют\nНалаштування :\nБанк - "
+        String answer = "Цей бот відображає курси валют\nНалаштування :\nБанк : "
                 + user.getBank().getName()
                 + "\nВалюта : " + user.currencyToString()
                 + "\nКількість знаків після коми : " + user.getSymbols().getNumber()
+                + "\nЧасовий пояс : " + user.getTimeZone().getName()
                 + "\nЧас оповіщення : " + user.getNotificationTime().getText();
         sendMessageWithInlineKeyboard(message.getChatId(), answer, util.startButtons());
     }
@@ -342,9 +342,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
 
     public void sendNotification() {
-        int currentHour = LocalTime.now().getHour() + BotConstance.UKRAINE_TIME_DIFFERENCE; //TODO: Часові зони
+        userRepository.getAll().values().forEach(it->it.setCurrentTime(new DateTime(it.getTimeZone().getTimeZone()).getHourOfDay()));
         userRepository.getAll().values().stream()
-                .filter(it -> it.getNotificationTime().getTime() == currentHour)
+                .filter(it -> it.getNotificationTime().getTime() == it.getCurrentTime())
                 .forEach(it -> getInfo(it.getChatId()));
     }
 

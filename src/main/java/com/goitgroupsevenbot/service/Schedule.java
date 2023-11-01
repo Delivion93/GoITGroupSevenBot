@@ -32,11 +32,10 @@ public class Schedule {
                     .build();
             Trigger notificationTrigger = TriggerBuilder
                     .newTrigger()
-                    .withIdentity("everyHourFrom9to18")
-                    .withSchedule(
-                            CronScheduleBuilder.cronSchedule("0 0 8-17 * * ?"))
+                    .withIdentity("Every hour  from 9 to 18")
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 8-19 * * ?"))
                     .build();
-
+//
             Scheduler notificationScheduler = new StdSchedulerFactory().getScheduler();
             notificationScheduler.getContext().put("bot", telegramBot);
             notificationScheduler.start();
