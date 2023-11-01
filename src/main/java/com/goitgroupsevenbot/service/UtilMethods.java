@@ -1,9 +1,7 @@
 package com.goitgroupsevenbot.service;
 
-import com.goitgroupsevenbot.entity.enums.Banks;
+import com.goitgroupsevenbot.entity.enums.*;
 import com.goitgroupsevenbot.entity.enums.Currency;
-import com.goitgroupsevenbot.entity.enums.NotificationTime;
-import com.goitgroupsevenbot.entity.enums.NumberOfSymbolsAfterComma;
 import com.goitgroupsevenbot.repository.UserRepository;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -26,7 +24,10 @@ public class UtilMethods {
         List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
         for (NumberOfSymbolsAfterComma symbols : NumberOfSymbolsAfterComma.values()) {
-            buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getSymbols(), symbols)).callbackData("SYMBOL:" + symbols.getSignature()).build());
+            buttonsRowOne.add(InlineKeyboardButton.builder()
+                    .text(getButton(userRepository
+                            .getById(chatId).getSymbols(), symbols))
+                    .callbackData("SYMBOL:" + symbols.getSignature()).build());
         }
         buttonsRowTwo.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:symbol").build());
         buttonsRowTwo.add(InlineKeyboardButton.builder().text("Далі").callbackData("NEXT:symbol").build());
@@ -42,11 +43,15 @@ public class UtilMethods {
      */
     public InlineKeyboardMarkup notificationButtons(Long chatId) {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> buttonsRowTimeZone = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowOne = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowTwo = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowThree = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowFour = new ArrayList<>();
         List<InlineKeyboardButton> buttonsRowFive = new ArrayList<>();
+        for (TimeZones zones : TimeZones.values()) {
+            buttonsRowTimeZone.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getTimeZone(), zones)).callbackData("NOTIFICATION_TIME_ZONE:" + zones.getSignature()).build());
+        }
         buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.NINE)).callbackData("NOTIFICATION:" + NotificationTime.NINE.getSignature()).build());
         buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.TEN)).callbackData("NOTIFICATION:" + NotificationTime.TEN.getSignature()).build());
         buttonsRowOne.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.ELEVEN)).callbackData("NOTIFICATION:" + NotificationTime.ELEVEN.getSignature()).build());
@@ -60,6 +65,7 @@ public class UtilMethods {
         buttonsRowFour.add(InlineKeyboardButton.builder().text(getButton(userRepository.getById(chatId).getNotificationTime(), NotificationTime.TURN_OF_NOTIFICATION)).callbackData("NOTIFICATION:" + NotificationTime.TURN_OF_NOTIFICATION.getSignature()).build());
         buttonsRowFive.add(InlineKeyboardButton.builder().text("Назад").callbackData("BACK:notification").build());
         buttonsRowFive.add(InlineKeyboardButton.builder().text("Отримати курс").callbackData("NEXT:notification").build());
+        rows.add(buttonsRowTimeZone);
         rows.add(buttonsRowOne);
         rows.add(buttonsRowTwo);
         rows.add(buttonsRowThree);
@@ -159,6 +165,15 @@ public class UtilMethods {
         return InlineKeyboardMarkup.builder().keyboard(rows).build();
     }
 
+    /**
+     * Util method to mark up a pressed button in the "notification" keyboard.
+     *
+     * @param saved   Chat's ID long.
+     * @param current Text to send.
+     */
+    public String getButton(TimeZones saved, TimeZones current) {
+        return saved == current ? current.getName() + "\uD83D\uDFE2" : current.getName();
+    }
     /**
      * Util method to mark up a pressed button in the "notification" keyboard.
      *

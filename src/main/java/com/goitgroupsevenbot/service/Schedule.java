@@ -4,7 +4,12 @@ import com.goitgroupsevenbot.service.jobs.CurrencyUpdateJob;
 import com.goitgroupsevenbot.service.jobs.NewsletterJob;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-
+/**
+ * Class for starting all Quartz jobs.
+ *
+ * @author Abramov Artem
+ * @version 1.0.0 28.10.2023
+ */
 public class Schedule {
 
     public void updateDada() {

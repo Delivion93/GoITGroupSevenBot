@@ -16,9 +16,16 @@ import org.quartz.*;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Class for upp date a list with banks info.
+ *
+ * @author Abramov Artem
+ * @version 1.0.0 28.10.2023
+ */
 public class CurrencyUpdateJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
+        CurrencyBankRepository.clearList();
         CurrencyService currencyServiceMonobank = new MonobankCurrencyService();
         CurrencyService currencyServiceNabu = new NabuCurrencyService();
         CurrencyService currencyServicePrivat = new PrivatBankCurrencyService();
@@ -44,6 +51,5 @@ public class CurrencyUpdateJob implements Job {
         CurrencyBankRepository.getList().addAll(currencyBankItemMapper.nabuDtoToDomain(currencyListNabu));
         CurrencyBankRepository.getList().addAll(currencyBankItemMapper.monobankDtoToDomain(currencyListMonobank));
         System.out.println("CurrencyBankRepository.listDomainBanks = " + CurrencyBankRepository.getList());
-
     }
 }

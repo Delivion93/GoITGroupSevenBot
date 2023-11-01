@@ -61,7 +61,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             case "START" -> {
                 switch (param[1]) {
                     case "settings" -> settingsCommandReceived(message.getChatId());
-                    case "info" -> getInfo(message.getChatId());
+                    case "info" -> getRateCommandReceived(message.getChatId());
                 }
             }
             case "NEXT" -> {
@@ -70,7 +70,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     case "settings" -> symbolsCommandReceived(message.getChatId());
                     case "banks" -> currencyCommandReceived(message.getChatId());
                     case "currency" -> notificationCommandReceived(message.getChatId());
-                    case "notification" -> getInfo(message.getChatId());
+                    case "notification" -> getRateCommandReceived(message.getChatId());
                 }
             }
             case "BACK" -> {
@@ -93,6 +93,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             case "BANKS" -> banksCallBackReceived(param[1], message);
             case "CURRENCY_TARGET" -> currencyCallBackReceived(param[1], message);
             case "NOTIFICATION" -> notificationCallBackReceived(param[1], message);
+            case "NOTIFICATION_TIME_ZONE" -> notificationTimeZoneCallBackReceived(param[1], message);
         }
     }
 
@@ -106,7 +107,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 //Response on command if it exists.
                 switch (command) {
                     case "/start" -> startCommandReceived(message);
-                    case "/info" -> getInfo(message.getChatId());
+                    case "/info" -> getRateCommandReceived(message.getChatId());
                     case "/settings" -> settingsCommandReceived(message.getChatId());
                     case "/symbols" -> symbolsCommandReceived(message.getChatId());
                     case "/banks" -> banksCommandReceived(message.getChatId());
@@ -127,7 +128,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         NumberOfSymbolsAfterComma symbol = NumberOfSymbolsAfterComma.valueOf(param);
         userRepository.getById(message.getChatId()).setSymbols(symbol);
         String answer = "Оберіть кількість знаків після коми:";
-        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.symbolsButtons(message.getChatId()));
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer,
+                util.symbolsButtons(message.getChatId()));
     }
 
     /**
@@ -163,7 +165,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     * Method for responding to the SYMBOL call back.
+     * Method for responding to the NOTIFICATION call back.
      *
      * @param param   Call back data.
      * @param message Message from user.
@@ -171,6 +173,19 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void notificationCallBackReceived(String param, Message message) {
         NotificationTime notification = NotificationTime.valueOf(param);
         userRepository.getById(message.getChatId()).setNotificationTime(notification);
+        String answer = "Оберіть час оповіщення:";
+        sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.notificationButtons(message.getChatId()));
+    }
+
+    /**
+     * Method for responding to the NOTIFICATION_TIME_ZONE call back.
+     *
+     * @param param   Call back data.
+     * @param message Message from user.
+     */
+    private void notificationTimeZoneCallBackReceived(String param, Message message) {
+        TimeZones zone = TimeZones.valueOf(param);
+        userRepository.getById(message.getChatId()).setTimeZone(zone);
         String answer = "Оберіть час оповіщення:";
         sendEditMessageWithInlineKeyboard(message.getChatId(), message.getMessageId(), answer, util.notificationButtons(message.getChatId()));
     }
@@ -266,6 +281,50 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
+     * Method for sending notification according to user preference.
+     */
+    public void sendNotification() {
+        userRepository.getAll().values().forEach(it -> it.setCurrentTime(new DateTime(it.getTimeZone().getTimeZone()).getHourOfDay()));
+        userRepository.getAll().values().stream()
+                .filter(it -> it.getNotificationTime().getTime() == it.getCurrentTime())
+                .forEach(it -> getRateCommandReceived(it.getChatId()));
+    }
+
+    /**
+     * Method for responding to the /info command.
+     *
+     * @param chatId Chat ID.
+     */
+    public void getRateCommandReceived(Long chatId) {
+        User user = userRepository.getById(chatId);
+        if (user.getCurrencyTarget().size() == 0) {
+            String answer = "У вас не обрано жодної валюти. Оберіть валюту";
+            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoEmptyCurrencyButtons());
+        } else {
+            StringBuilder sb = new StringBuilder();
+            List<CurrencyBankItem> listBanks = CurrencyBankRepository.getList().stream()
+                    .filter(it -> it.getBanks().equals(user.getBank()))
+                    .filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
+                    .toList();
+            for (CurrencyBankItem listBank : listBanks) {
+                sb.append("Курс ")
+                        .append(listBank.getBanks().getName())
+                        .append(" UAH/ ")
+                        .append(listBank.getCurrency().getText())
+                        .append("\nКупівля: ")
+                        .append(String.format(user.getSymbols().getExpression(), listBank.getRateBuy()))
+                        .append("\nПродаж: ")
+                        .append(String.format(user.getSymbols().getExpression(), listBank.getRateSell()))
+                        .append("\n");
+            }
+            String answer = "\nКількість знаків після коми : " + user.getSymbols().getNumber()
+                    + "\nЧас оповіщення : " + user.getNotificationTime().getText()
+                    + "\n" + sb;
+            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoButtons());
+        }
+    }
+
+    /**
      * Util method to send edit message with inline keyboard.
      *
      * @param chatId Chat's ID long.
@@ -273,7 +332,10 @@ public class TelegramBot extends TelegramLongPollingBot {
      * @param markup Markup with list of buttons.
      */
     private void sendEditMessageWithInlineKeyboard(long chatId, int messageId, String text, InlineKeyboardMarkup markup) {
-        EditMessageText message = EditMessageText.builder().chatId(chatId).messageId(messageId).text(text).replyMarkup(markup).build();
+        EditMessageText message = EditMessageText.builder()
+                .chatId(chatId).messageId(messageId)
+                .text(text).replyMarkup(markup)
+                .build();
         executeEditMessage(message);
     }
 
@@ -338,43 +400,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void sendMessageWithInlineKeyboard(long chatId, String text, InlineKeyboardMarkup markup) {
         SendMessage message = SendMessage.builder().chatId(chatId).text(text).replyMarkup(markup).build();
         executeMessage(message);
-    }
-
-
-    public void sendNotification() {
-        userRepository.getAll().values().forEach(it->it.setCurrentTime(new DateTime(it.getTimeZone().getTimeZone()).getHourOfDay()));
-        userRepository.getAll().values().stream()
-                .filter(it -> it.getNotificationTime().getTime() == it.getCurrentTime())
-                .forEach(it -> getInfo(it.getChatId()));
-    }
-
-    public void getInfo(Long chatId) {
-        User user = userRepository.getById(chatId);
-        if (user.getCurrencyTarget().size() == 0) {
-            String answer = "У вас не обрано жодної валюти. Оберіть валюту";
-            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoEmptyCurrencyButtons());
-        } else {
-            StringBuilder sb = new StringBuilder();
-            List<CurrencyBankItem> listBanks = CurrencyBankRepository.getList().stream()
-                    .filter(it -> it.getBanks().equals(user.getBank()))
-                    .filter(it -> it.getCurrency().equals(user.getCurrencyTarget().get(it.getCurrency())))
-                    .toList();
-            for (CurrencyBankItem listBank : listBanks) {
-                sb.append("Курс ")
-                        .append(listBank.getBanks().getName())
-                        .append(" UAH/ ")
-                        .append(listBank.getCurrency().getText())
-                        .append("\nКупівля: ")
-                        .append(String.format(user.getSymbols().getExpression(), listBank.getRateBuy()))
-                        .append("\nПродаж: ")
-                        .append(String.format(user.getSymbols().getExpression(), listBank.getRateSell()))
-                        .append("\n");
-            }
-            String answer = "\nКількість знаків після коми : " + user.getSymbols().getNumber()
-                    + "\nЧас оповіщення : " + user.getNotificationTime().getText()
-                    +"\n"+sb;
-            sendMessageWithInlineKeyboard(user.getChatId(), answer, util.getInfoButtons());
-        }
     }
 
     @Override

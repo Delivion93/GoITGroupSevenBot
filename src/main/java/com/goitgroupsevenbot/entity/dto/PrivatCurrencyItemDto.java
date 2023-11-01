@@ -1,4 +1,5 @@
 package com.goitgroupsevenbot.entity.dto;
+
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- *DTO object.
+ * DTO object.
+ *
  * @author Shalaiev Ivan
  * @version 1.0.0 19.10.2023
  */

@@ -9,21 +9,38 @@ import com.goitgroupsevenbot.entity.dto.PrivatCurrencyItemDto;
 
 import java.util.List;
 
+/**
+ * Class for mapping from dto object to domain object.
+ *
+ * @author Shalaiev Ivan
+ * @version 1.0.0 28.10.2023
+ */
 public class CurrencyBankItemMapper {
-
+    /**
+     * Method for mapping from PrivatCurrencyItemDto to CurrencyBankItem.
+     *
+     * @param currencyItemDtos List of PrivatCurrencyItemDto.
+     * @return List<CurrencyBankItem>.
+     */
     public List<CurrencyBankItem> privatDtoToDomain(List<PrivatCurrencyItemDto> currencyItemDtos) {
         return currencyItemDtos.stream()
-                                .filter(it -> it.getCcy().equals(Currency.EUR.getText())
-                                        || it.getCcy().equals(Currency.USD.getText()))
-                                .map(it -> CurrencyBankItem.builder()
-                                        .banks(Banks.PRIVAT_BANK)
+                .filter(it -> it.getCcy().equals(Currency.EUR.getText())
+                        || it.getCcy().equals(Currency.USD.getText()))
+                .map(it -> CurrencyBankItem.builder()
+                        .banks(Banks.PRIVAT_BANK)
                         .currency(Currency.valueOf(it.getCcy()))
                         .rateBuy(it.getBuy())
                         .rateSell(it.getSale())
                         .build())
                 .toList();
     }
-    public List<CurrencyBankItem> nabuDtoToDomain(List<NabuCurrencyItemDto> currencyItemDtos){
+    /**
+     * Method for mapping from NabuCurrencyItemDto to CurrencyBankItem.
+     *
+     * @param currencyItemDtos List of NabuCurrencyItemDto.
+     * @return List<CurrencyBankItem>.
+     */
+    public List<CurrencyBankItem> nabuDtoToDomain(List<NabuCurrencyItemDto> currencyItemDtos) {
         return currencyItemDtos.stream()
                 .filter(it -> it.getCc().equals(Currency.USD.getText()) || it.getCc().equals(Currency.EUR.getText()))
                 .map(it -> CurrencyBankItem.builder()
@@ -34,9 +51,15 @@ public class CurrencyBankItemMapper {
                         .build())
                 .toList();
     }
-    public List<CurrencyBankItem> monobankDtoToDomain(List<MonobankCurrencyItemDto>currencyItemDtos){
+    /**
+     * Method for mapping from MonobankCurrencyItemDto to CurrencyBankItem.
+     *
+     * @param currencyItemDtos List of MonobankCurrencyItemDto.
+     * @return List<CurrencyBankItem>.
+     */
+    public List<CurrencyBankItem> monobankDtoToDomain(List<MonobankCurrencyItemDto> currencyItemDtos) {
         return currencyItemDtos.stream()
-                .filter(it -> it.getCurrencyCodeB() == 980 &&(it.getCurrencyCodeA() == 840 || it.getCurrencyCodeA() == 978))
+                .filter(it -> it.getCurrencyCodeB() == 980 && (it.getCurrencyCodeA() == 840 || it.getCurrencyCodeA() == 978))
                 .map(it -> CurrencyBankItem.builder()
                         .banks(Banks.MOMOBANK)
                         .currency(getCurrency(it.getCurrencyCodeA()))
@@ -52,30 +75,32 @@ public class CurrencyBankItemMapper {
      * @param currencyCode Currency code based on ISO table.
      * @return Currency enum.
      */
-    private static Currency getCurrency(int currencyCode){
-        if (currencyCode == 840){
+    private static Currency getCurrency(int currencyCode) {
+        if (currencyCode == 840) {
             return Currency.USD;
         }
         return Currency.EUR;
     }
+
     /**
      * Util method to return rate buy based on rate cross.
      *
      * @param currencyRate Currency rate cross.
      * @return double rate buy.
      */
-    private double getCurrencyRateBuy(double currencyRate){
+    private double getCurrencyRateBuy(double currencyRate) {
 
-        return currencyRate - (0.989/100)*currencyRate;
+        return currencyRate - (0.989 / 100) * currencyRate;
     }
+
     /**
      * Util method to return rate sell based on rate cross.
      *
      * @param currencyRate Currency rate cross.
      * @return double rate sell.
      */
-    private double getCurrencyRateSell(double currencyRate){
+    private double getCurrencyRateSell(double currencyRate) {
 
-        return currencyRate + (0.989/100)*currencyRate;
+        return currencyRate + (0.989 / 100) * currencyRate;
     }
 }

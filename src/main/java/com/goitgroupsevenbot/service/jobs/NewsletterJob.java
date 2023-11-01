@@ -3,6 +3,13 @@ package com.goitgroupsevenbot.service.jobs;
 import com.goitgroupsevenbot.service.TelegramBot;
 import org.quartz.*;
 
+/**
+ * Class for sending notification.
+ *
+ * @author Abramov Artem
+ * @version 1.0.0 28.10.2023
+ */
+
 public class NewsletterJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
